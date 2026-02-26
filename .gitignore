@@ -1,0 +1,37 @@
+# 忽略 Python 虚拟环境
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+backend/.Python
+
+# 忽略配置和历史文件（包含敏感信息）
+backend/config.json
+backend/history.json
+
+# 忽略 Node.js 依赖
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# 忽略日志文件
+*.log
+
+# 忽略系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 忽略 IDE 配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 忽略临时文件
+*.tmp
+*.temp
+
+
