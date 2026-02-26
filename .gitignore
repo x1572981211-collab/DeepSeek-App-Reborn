@@ -34,4 +34,6 @@ desktop.ini
 *.tmp
 *.temp
 
-
+# 忽略本地自动化上传脚本文档 (避免推送到开源仓库)
+1_*.bat
+GitHub上传指南.md
