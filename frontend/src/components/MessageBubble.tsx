@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Message } from '../store'
+import { useStore, Message } from '../store'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
@@ -14,6 +14,7 @@ interface MessageBubbleProps {
 }
 
 const MessageBubble = React.memo(function MessageBubble({ message, index, onRevoke, onResend, onQuote }: MessageBubbleProps) {
+  const { config } = useStore()
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
   const copyToClipboard = (text: string, id: string) => {
@@ -55,7 +56,13 @@ const MessageBubble = React.memo(function MessageBubble({ message, index, onRevo
             ? 'bg-red-500 text-white'
             : 'bg-purple-500 text-white'
           } `}>
-          {isUser ? <User size={20} /> : isSystem ? <AlertCircle size={20} /> : <span className="text-xs font-bold leading-none">{displayName.substring(0, 2)}</span>}
+          {isUser ? (
+            config?.user_avatar ? <img src={config.user_avatar} alt="User" className="w-full h-full object-cover rounded-full" /> : <User size={20} />
+          ) : isSystem ? (
+            <AlertCircle size={20} />
+          ) : (
+            config?.ai_avatar ? <img src={config.ai_avatar} alt="AI" className="w-full h-full object-cover rounded-full" /> : <span className="text-xs font-bold leading-none">{displayName.substring(0, 2)}</span>
+          )}
         </div>
         {!isUser && !isSystem && (
           <div className="mt-1 text-[10px] text-gray-400 font-medium truncate max-w-[3rem] text-center" title={displayName}>

@@ -31,6 +31,9 @@ export interface Config {
   system_prompt: string
   context_limit: number
   theme: string
+  custom_models?: string[]
+  user_avatar?: string
+  ai_avatar?: string
 }
 
 interface AppState {

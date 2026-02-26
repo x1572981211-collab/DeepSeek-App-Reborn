@@ -36,8 +36,8 @@ export default function ChatArea() {
 
   // 自动滚动到底部
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [currentSession?.messages])
+    messagesEndRef.current?.scrollIntoView({ behavior: isGenerating ? 'auto' : 'smooth' })
+  }, [currentSession?.messages, isGenerating])
 
   // 自动调整输入框高度
   useEffect(() => {

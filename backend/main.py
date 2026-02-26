@@ -58,7 +58,9 @@ class Config(BaseModel):
     system_prompt: str = "你是一个乐于助人的 AI 助手。"
     context_limit: int = 20
     theme: str = "dark"
-
+    custom_models: List[str] = []
+    user_avatar: str = ""
+    ai_avatar: str = ""
 class ChatRequest(BaseModel):
     session_id: str
     message: str
@@ -312,6 +314,10 @@ async def websocket_chat(websocket: WebSocket):
                 temperature = config.get("temperature", 1.0)
                 system_prompt = config.get("system_prompt", "你是一个乐于助人的 AI 助手。")
                 context_limit = config.get("context_limit", 20)
+                
+                print(f"🔗 [DEBUG] Requesting Provider Base URL: {base_url}")
+                print(f"🔑 [DEBUG] Using API Key starting with: {api_key[:8]}... ending with: {api_key[-4:] if len(api_key)>4 else 'None'}")
+                print(f"🤖 [DEBUG] Using Model: {model}")
                 
                 # 构建消息历史
                 messages = [{"role": "system", "content": system_prompt}]

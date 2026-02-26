@@ -6,11 +6,26 @@ export default function Settings() {
   const { config, updateConfig, toggleSettings } = useStore()
   const [localConfig, setLocalConfig] = useState(config)
   const [showApiKey, setShowApiKey] = useState(false)
+  const [newCustomModel, setNewCustomModel] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const userAvatarInputRef = useRef<HTMLInputElement>(null)
+  const aiAvatarInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setLocalConfig(config)
   }, [config])
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'user' | 'ai') => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string
+      setLocalConfig(prev => prev ? { ...prev, [target === 'user' ? 'user_avatar' : 'ai_avatar']: base64 } : null)
+    }
+    reader.readAsDataURL(file)
+  }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -167,7 +182,96 @@ export default function Settings() {
                 {models[localConfig.provider as keyof typeof models]?.map(m => (
                   <option key={m} value={m}>{m}</option>
                 ))}
+                {localConfig.custom_models?.map(m => (
+                  <option key={m} value={m}>{m} (自定义)</option>
+                ))}
               </select>
+            </div>
+
+            {/* 自定义模型管理 */}
+            <div>
+              <label className="block text-sm font-medium mb-2">自定义模型</label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={newCustomModel}
+                  onChange={(e) => setNewCustomModel(e.target.value)}
+                  placeholder="输入你私有部署或第三方支持的模型名称..."
+                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none"
+                />
+                <button
+                  onClick={() => {
+                    if (newCustomModel.trim()) {
+                      setLocalConfig(prev => {
+                        if (!prev) return null;
+                        const currentModels = prev.custom_models || [];
+                        if (!currentModels.includes(newCustomModel.trim())) {
+                          return { ...prev, custom_models: [...currentModels, newCustomModel.trim()] };
+                        }
+                        return prev;
+                      });
+                      setNewCustomModel('');
+                    }
+                  }}
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                >
+                  添加
+                </button>
+              </div>
+              {localConfig.custom_models && localConfig.custom_models.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {localConfig.custom_models.map(m => (
+                    <div key={m} className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded text-sm">
+                      <span>{m}</span>
+                      <button onClick={() => {
+                        setLocalConfig(prev => {
+                          if (!prev) return null;
+                          const newModels = prev.custom_models?.filter(x => x !== m) || [];
+                          let selectModel = prev.model;
+                          if (prev.model === m) {
+                            selectModel = models[prev.provider as keyof typeof models]?.[0] || 'deepseek-chat';
+                          }
+                          return { ...prev, model: selectModel, custom_models: newModels };
+                        });
+                      }} className="text-gray-500 hover:text-red-500 ml-1"><X size={14} /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 头像设置 */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-2">我的头像</label>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
+                    {localConfig.user_avatar ? <img src={localConfig.user_avatar} alt="User" className="w-full h-full object-cover" /> : <div className="text-gray-500">U</div>}
+                  </div>
+                  <div className="flex flex-col items-start gap-1">
+                    <button onClick={() => userAvatarInputRef.current?.click()} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">上传图片</button>
+                    {localConfig.user_avatar && (
+                      <button onClick={() => setLocalConfig(prev => prev ? { ...prev, user_avatar: '' } : null)} className="text-red-500 text-xs hover:underline">清除头像</button>
+                    )}
+                  </div>
+                  <input ref={userAvatarInputRef} type="file" accept="image/*" className="hidden" onChange={e => handleAvatarUpload(e, 'user')} />
+                </div>
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-2">AI 头像</label>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
+                    {localConfig.ai_avatar ? <img src={localConfig.ai_avatar} alt="AI" className="w-full h-full object-cover" /> : <div className="text-gray-500">AI</div>}
+                  </div>
+                  <div className="flex flex-col items-start gap-1">
+                    <button onClick={() => aiAvatarInputRef.current?.click()} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">上传图片</button>
+                    {localConfig.ai_avatar && (
+                      <button onClick={() => setLocalConfig(prev => prev ? { ...prev, ai_avatar: '' } : null)} className="text-red-500 text-xs hover:underline">清除头像</button>
+                    )}
+                  </div>
+                  <input ref={aiAvatarInputRef} type="file" accept="image/*" className="hidden" onChange={e => handleAvatarUpload(e, 'ai')} />
+                </div>
+              </div>
             </div>
 
             {/* 最大输出长度 */}
