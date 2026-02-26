@@ -19,7 +19,7 @@ export default function Settings() {
     const reader = new FileReader()
     reader.onload = (event) => {
       const content = event.target?.result as string
-      setLocalConfig({ ...localConfig, system_prompt: content })
+      setLocalConfig(prev => prev ? { ...prev, system_prompt: content } : null)
     }
     reader.readAsText(file)
   }
@@ -89,7 +89,32 @@ export default function Settings() {
               <label className="block text-sm font-medium mb-2">API 提供商</label>
               <select
                 value={localConfig.provider}
-                onChange={(e) => setLocalConfig({ ...localConfig, provider: e.target.value })}
+                onChange={(e) => {
+                  const newProvider = e.target.value;
+                  let newBaseUrl = localConfig.base_url;
+                  let newModel = localConfig.model;
+
+                  if (newProvider === 'DeepSeek Official') {
+                    newBaseUrl = 'https://api.deepseek.com';
+                    newModel = 'deepseek-chat';
+                  } else if (newProvider === 'SiliconFlow (硅基流动)') {
+                    newBaseUrl = 'https://api.siliconflow.cn/v1';
+                    newModel = 'deepseek-ai/DeepSeek-V3';
+                  } else if (newProvider === 'Volcengine (火山引擎/豆包)') {
+                    newBaseUrl = 'https://ark.cn-beijing.volces.com/api/v3';
+                    newModel = 'ep-202xxxx-xxxxx'; // Users must still replace this
+                  }
+
+                  setLocalConfig(prev => {
+                    if (!prev) return null;
+                    return {
+                      ...prev,
+                      provider: newProvider,
+                      base_url: newBaseUrl,
+                      model: newModel
+                    };
+                  });
+                }}
                 className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 {providers.map(p => (
